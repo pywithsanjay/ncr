@@ -92,42 +92,46 @@ def home():
 # ------------------------
 @app.post("/student")
 def create_student(data: UserBase, request: Request):
-    records = load_data(STUDENT_FILE)
+    try:
+        records = load_data(STUDENT_FILE)
 
-    record = {
-        "id": generate_id(),
-        "type": "student",
+        record = {
+            "id": generate_id(),
+            "type": "student",
 
-        "name": data.name,
-        "mobile_no": data.mobile_no,
-        "email": data.email,
-        "course": data.course,
-        "subject": data.subject,
+            "name": data.name,
+            "mobile_no": data.mobile_no,
+            "email": data.email,
+            "course": data.course,
+            "subject": data.subject,
 
-        "qualification": data.qualification,
-        "experience": data.experience,
-        "preferred_mode": data.preferred_mode,
-        "language": data.language,
+            "qualification": data.qualification,
+            "experience": data.experience,
+            "preferred_mode": data.preferred_mode,
+            "language": data.language,
 
-        "country": data.country,
-        "city": data.city,
-        "timezone": data.timezone,
+            "country": data.country,
+            "city": data.city,
+            "timezone": data.timezone,
 
-        "status": "active",
-        "joined_date": datetime.utcnow().isoformat(),
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": None,
+            "status": "active",
+            "joined_date": datetime.utcnow().isoformat(),
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": None,
 
-        "ip_address": request.client.host,
-        "user_agent": request.headers.get("user-agent"),
-        "source": "website"
-    }
+            "ip_address": get_client_ip(request),
+            "user_agent": request.headers.get("user-agent", "unknown"),
+            "source": "website"
+        }
 
-    records.append(record)
-    save_data(STUDENT_FILE, records)
+        records.append(record)
+        save_data(STUDENT_FILE, records)
 
-    return {"message": "Student created", "data": record}
+        return {"message": "Student created", "data": record}
 
+    except Exception as e:
+        # 🔥 THIS will surface the real error
+        raise HTTPException(status_code=500, detail=str(e))
 # ------------------------
 # CREATE TUTOR
 # ------------------------
@@ -222,3 +226,4 @@ def update_tutor(user_id: str, data: UpdateUser):
             return {"message": "Tutor updated", "data": record}
 
     raise HTTPException(status_code=404, detail="Tutor not found")
+
